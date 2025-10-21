@@ -1,0 +1,188 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user of the MortgagePilot application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "name": {
+          "type": "string",
+          "description": "User's name or company name."
+        },
+        "defaultProvince": {
+          "type": "string",
+          "description": "User's default province for property searches."
+        }
+      },
+      "required": [
+        "id",
+        "email"
+      ]
+    },
+    "FinancialInputs": {
+      "title": "FinancialInputs",
+      "type": "object",
+      "description": "Represents the financial inputs for a mortgage calculation.",
+      "properties": {
+        "numberOfHolders": { "type": "string" },
+        "monthlyIncome": { "type": ["number", "string"] },
+        "annualPayments": { "type": "string" },
+        "age": { "type": ["number", "string"] },
+        "employmentStatus": { "type": "string" },
+        "monthlyIncome2": { "type": ["number", "string"] },
+        "annualPayments2": { "type": "string" },
+        "age2": { "type": ["number", "string"] },
+        "employmentStatus2": { "type": "string" },
+        "monthlyExpenses": { "type": ["number", "string"] },
+        "selectedTerm": { "type": "string" }
+      }
+    },
+    "Property": {
+      "title": "Property",
+      "type": "object",
+      "description": "Represents a property being considered by a client.",
+      "properties": {
+        "id": { "type": "number" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "province": { "type": "string" },
+        "financingAmount": { "type": "number" },
+        "requiredFunds": { "type": "number" },
+        "monthlyPayment": { "type": "number" },
+        "debtToIncomeRatio": { "type": "number" },
+        "isFavorite": { "type": "boolean" }
+      },
+      "required": [
+        "id",
+        "name",
+        "price",
+        "province",
+        "financingAmount",
+        "requiredFunds",
+        "monthlyPayment",
+        "debtToIncomeRatio"
+      ]
+    },
+    "Client": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Client",
+      "type": "object",
+      "description": "Represents a client of a real estate agent.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Client entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the agent (user) this client belongs to."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the client."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The phone number of the client."
+        },
+        "maxPurchasePrice": {
+          "type": "number",
+          "description": "The maximum purchase price calculated for the client."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the client was created."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the client in the buying process.",
+          "enum": [
+            "default",
+            "arras",
+            "2visita"
+          ]
+        },
+        "sortOrder": {
+          "type": "number",
+          "description": "The manual sort order of the client in the list."
+        },
+        "financialInputs": {
+          "$ref": "#/backend/entities/FinancialInputs"
+        },
+        "favoriteProperty": {
+          "oneOf": [
+            { "$ref": "#/backend/entities/Property" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "maxPurchasePrice",
+        "createdAt",
+        "status",
+        "sortOrder",
+        "financialInputs"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information. Each user has their own profile document. Authorization is based on path-based ownership: request.auth.uid == userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/clients/{clientId}",
+        "definition": {
+          "entityName": "Client",
+          "schema": {
+            "$ref": "#/backend/entities/Client"
+          },
+          "description": "Stores clients for a specific agent (user). Authorization is based on path-based ownership: request.auth.uid == userId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (agent)."
+            },
+            {
+              "name": "clientId",
+              "description": "The unique identifier for the client."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
